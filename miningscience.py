@@ -1,39 +1,34 @@
 def download_pubmed(keyword):
-       """ Función que extrae listado de artículos desde pubmed a traves de un keyword"""
-    import Bio
+    """ Función que extrae listado de artículos desde pubmed a traves de un keyword que ingresa el usuario entre comillas"""
     from Bio import Entrez
-    from Bio import SeqIO
-    Entrez.email = "andres.calderon@est.ikiam.edu.ec"
-   
+    Entrez.email = "sebastian.neto@est.ikiam.edu.ec"
     record=Entrez.read(Entrez.esearch(db="pubmed",
-                        term= "Ecuador_genomics",
+                        term= keyword,
                         usehistory="y"))
     
     webenv=record["WebEnv"]
     query_key=record["QueryKey"]
-    
-    handlexd=Entrez.efetch(db="pubmed",
+    handle=Entrez.efetch(db="pubmed",
                       rettype='medline',
                       retmode="text",
                       retstart=0,
                       retmax=543, webenv=webenv, query_key=query_key)
-    out_handlexd = open('Ecuador_genomics.txt', errors='ignore', "w")
-    m=handlexd.read()
-    out_handlexd.write(m)
-    out_handlexd.close()
-    handlexd.close()
+    out_handle = open(keyword+".txt", "w")
+    m=handle.read()
+    out_handle.write(m)
+    out_handle.close()
+    handle.close()
     return m
 
 def mining_pubs(tipo, archivo):
-      """
-    Función que registra tres tipos de opciones "DP", "AU", "AD". Si se encuentra DP se regresa una data con el PMID y el año_DP, pero si es un AU se regresa una recuperación del número de autores (num_autores) por PMID, finalmente, si es un AD se retorna un dataframe con el país y el num_autores. Para esto se usara un keyword que descargara un archivo de pubmed con la función download_pubmed
     """
-
+    Función que pide como primera entrada tres tipos de opciones "DP", "AU" y "AD". Si coloca "DP" el resultado es un data con el PMID y el DP_year, si es "AU" recupera el número de autores (num_auth) por PMID, y si el tipo es "AD" el retorno es un dataframe con el country y el num_auth. Se pide un segundo argumento que corresponde al keyword usado para la descarga de archivos con la funcion download pubmed
+    """
     import csv
     import re
     import pandas as pd
     from collections import Counter
-    with open('Ecuador_genomics.txt', errors="ignore") as f: 
+    with open(archivo+".txt", errors="ignore") as f: 
         mitexto = f.read() 
     if tipo == "DP":
         PMID = re.findall("PMID-\s\d{8}", mitexto)
@@ -62,21 +57,21 @@ def mining_pubs(tipo, archivo):
         mitexto = re.sub(r"Av\.","", mitexto)
         mitexto = re.sub(r"Vic\.","", mitexto)
         mitexto = re.sub(r"Tas\.","", mitexto)
-        AD = texto.split("AD  - ")
-        num_paises = []
+        AD = mitexto.split("AD  - ")
+        n_paises = []
         for i in range(len(AD)): 
             pais = re.findall("\S, ([A-Za-z]*)\.", AD[i])
             if not pais == []: 
                 if not len(pais) >= 2:  
                     if re.findall("^[A-Z]", pais[0]): 
-                        num_paises.append(pais[0])
-        conteo=Counter(num_paises)
+                        n_paises.append(pais[0])
+        conteo=Counter(n_paises)
         resultado = {}
         for clave in conteo:
             valor = conteo[clave]
             if valor != 1: 
                 resultado[clave] = valor 
-        rep_pais = pd.DataFrame()
-        rep_pais["pais"] = resultado.keys()
-        rep_pais["numero de autores"] = resultado.values()
+        veces_pais = pd.DataFrame()
+        veces_pais["pais"] = resultado.keys()
+        veces_pais["numero de autores"] = resultado.values()
         return (veces_pais)
