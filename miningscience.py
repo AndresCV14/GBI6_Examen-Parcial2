@@ -1,28 +1,32 @@
 def download_pubmed(keyword):
-    """ Función que extrae listado de artículos desde pubmed a traves de un keyword"""
+    """ Función que extrae listado de artículos desde pubmed a traves de un keyword que ingresa el usuario entre comillas"""
+    import Bio
     from Bio import Entrez
+    from Bio import SeqIO
     Entrez.email = "andres.calderon@est.ikiam.edu.ec"
-    Ingresar=Entrez.read(Entrez.esearch(db="pubmed",
-                        term= keyword,
+   
+    record=Entrez.read(Entrez.esearch(db="pubmed",
+                        term= "Ecuador genomics",
                         usehistory="y"))
     
-    webenv=Ingresar["WebEnv"]
-    querykey=Ingresar["QueryKey"]
-    hand1=Entrez.efetch(db="pubmed",
+    webenv=record["WebEnv"]
+    query_key=record["QueryKey"]
+    
+    handlexd=Entrez.efetch(db="pubmed",
                       rettype='medline',
                       retmode="text",
                       retstart=0,
-                      retmax=543, webenv=webenv, querykey=querykey)
-    out_hand1 = open(keyword+".txt", "w")
-    a=hand1.read()
-    out_hand1.write(a)
-    out_hand1.close()
-    hand1.close()
-    return a
+                      retmax=543, webenv=webenv, query_key=query_key)
+    out_handlexd = open(keyword+".txt", "w")
+    m=handlexd.read()
+    out_handlexd.write(m)
+    out_handlexd.close()
+    handlexd.close()
+    return m
 
 def mining_pubs(tipo, archivo):
     """
-    Función que registra tres tipos de opciones "DP", "AU", "AD". Si se encuentra DP se regresa una data con el PMID y el año_DP, pero si es un AU se regresa una recuperación del número de autores (num_autores) por PMID, finalmente, si es un AD se retorna un dataframe con el país y el num_autores. Para esto se usara un keyword que descargara un archivo de pubmed con la función download_pubmed
+    Función que pide como primera entrada tres tipos de opciones "DP", "AU" y "AD". Si coloca "DP" el resultado es un data con el PMID y el DP_year, si es "AU" recupera el número de autores (num_auth) por PMID, y si el tipo es "AD" el retorno es un dataframe con el country y el num_auth. Se pide un segundo argumento que corresponde al keyword usado para la descarga de archivos con la funcion download pubmed
     """
     import csv
     import re
@@ -35,10 +39,10 @@ def mining_pubs(tipo, archivo):
         PMID = "".join(PMID)
         PMID = PMID.split("PMID- ")
         año = re.findall("DP\s{2}-\s(\d{4})", mitexto)
-        pmid = pd.DataFrame()
-        pmid["PMID"] = PMID
-        pmid["Año de publicación"] = año
-        return (pmid)
+        pmid_y = pd.DataFrame()
+        pmid_y["PMID"] = PMID
+        pmid_y["Año de publicación"] = año
+        return (pmid_y)
     elif tipo == "AU": 
         PMID = re.findall("PMID- (\d*)", mitexto) 
         autores = mitexto.split("PMID- ")
@@ -57,7 +61,7 @@ def mining_pubs(tipo, archivo):
         mitexto = re.sub(r"Av\.","", mitexto)
         mitexto = re.sub(r"Vic\.","", mitexto)
         mitexto = re.sub(r"Tas\.","", mitexto)
-        AD = mitexto.split("AD  - ")
+        AD = texto.split("AD  - ")
         num_paises = []
         for i in range(len(AD)): 
             pais = re.findall("\S, ([A-Za-z]*)\.", AD[i])
@@ -65,13 +69,13 @@ def mining_pubs(tipo, archivo):
                 if not len(pais) >= 2:  
                     if re.findall("^[A-Z]", pais[0]): 
                         num_paises.append(pais[0])
-        conteo = Counter(num_paises)
+        conteo=Counter(num_paises)
         resultado = {}
         for clave in conteo:
             valor = conteo[clave]
             if valor != 1: 
                 resultado[clave] = valor 
         rep_pais = pd.DataFrame()
-        rep_pais["país"] = resultado.keys()
-        rep_pais["número de autores"] = resultado.values()
-        return (rep_pais)
+        rep_pais["pais"] = resultado.keys()
+        rep_pais["numero de autores"] = resultado.values()
+        return (veces_pais)
