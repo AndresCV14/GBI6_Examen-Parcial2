@@ -1,12 +1,12 @@
 def download_pubmed(keyword):
-    """ Función que extrae listado de artículos desde pubmed a traves de un keyword que ingresa el usuario entre comillas"""
+       """ Función que extrae listado de artículos desde pubmed a traves de un keyword"""
     import Bio
     from Bio import Entrez
     from Bio import SeqIO
     Entrez.email = "andres.calderon@est.ikiam.edu.ec"
    
     record=Entrez.read(Entrez.esearch(db="pubmed",
-                        term= "Ecuador genomics",
+                        term= "Ecuador_genomics",
                         usehistory="y"))
     
     webenv=record["WebEnv"]
@@ -17,7 +17,7 @@ def download_pubmed(keyword):
                       retmode="text",
                       retstart=0,
                       retmax=543, webenv=webenv, query_key=query_key)
-    out_handlexd = open(keyword+".txt", "w")
+    out_handlexd = open('Ecuador_genomics.txt', errors='ignore', "w")
     m=handlexd.read()
     out_handlexd.write(m)
     out_handlexd.close()
@@ -25,14 +25,15 @@ def download_pubmed(keyword):
     return m
 
 def mining_pubs(tipo, archivo):
+      """
+    Función que registra tres tipos de opciones "DP", "AU", "AD". Si se encuentra DP se regresa una data con el PMID y el año_DP, pero si es un AU se regresa una recuperación del número de autores (num_autores) por PMID, finalmente, si es un AD se retorna un dataframe con el país y el num_autores. Para esto se usara un keyword que descargara un archivo de pubmed con la función download_pubmed
     """
-    Función que pide como primera entrada tres tipos de opciones "DP", "AU" y "AD". Si coloca "DP" el resultado es un data con el PMID y el DP_year, si es "AU" recupera el número de autores (num_auth) por PMID, y si el tipo es "AD" el retorno es un dataframe con el country y el num_auth. Se pide un segundo argumento que corresponde al keyword usado para la descarga de archivos con la funcion download pubmed
-    """
+
     import csv
     import re
     import pandas as pd
     from collections import Counter
-    with open(archivo+".txt", errors="ignore") as f: 
+    with open('Ecuador_genomics.txt', errors="ignore") as f: 
         mitexto = f.read() 
     if tipo == "DP":
         PMID = re.findall("PMID-\s\d{8}", mitexto)
